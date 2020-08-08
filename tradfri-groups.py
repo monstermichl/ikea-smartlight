@@ -27,11 +27,10 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
 import sys
-import ConfigParser
 import argparse
 
+from config import config
 from tradfri import tradfriActions
 
 def parse_args():
@@ -50,13 +49,10 @@ def parse_args():
 def main():
     """ main function """
     args = parse_args()
-    conf = ConfigParser.ConfigParser()
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    conf.read(script_dir + '/tradfri.cfg')
 
-    hubip = conf.get('tradfri', 'hubip')
-    apiuser = conf.get('tradfri', 'apiuser')
-    apikey = conf.get('tradfri', 'apikey')
+    hubip   = config.hubip
+    apiuser = config.apiuser
+    apikey  = config.apikey
 
     if args.action == 'power':
         if args.value == 'on' or args.value == 'off':

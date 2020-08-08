@@ -27,23 +27,19 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
 import sys
 import time
-import ConfigParser
 
+from config import config
 from tradfri import tradfriStatus
 from tqdm import tqdm
 
 def main():
     """ main function """
-    conf = ConfigParser.ConfigParser()
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    conf.read(script_dir + '/tradfri.cfg')
 
-    hubip = conf.get('tradfri', 'hubip')
-    apiuser = conf.get('tradfri', 'apiuser')
-    apikey = conf.get('tradfri', 'apikey')
+    hubip   = config.hubip
+    apiuser = config.apiuser
+    apikey  = config.apikey
 
     lightbulb = []
     lightgroup = []
