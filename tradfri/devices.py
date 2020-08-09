@@ -108,6 +108,45 @@ class LightBulb(Device):
             "f5faf6": "White",
             "f1e0b5": "Warm",
             "efd275": "Glow",
+        }
+
+        mapped_value = ''
+        for value, description in color_map.items():
+            if value == color_value:
+                mapped_value = description
+                break
+
+        return mapped_value
+
+
+class ColorLightBulb(LightBulb):
+    def __init__(self, id, name, brightness=0, color=0, status=False, creation_date=0, product_info: ProductInfo=None):
+        super().__init__(id, name, brightness, color, status, creation_date, product_info)
+
+        self.color_description = ColorLightBulb._map_color_value(self.color)
+
+    def from_json(json):
+        """ creates a ColorLightBulb instance out of a valid TRADFRI coap-client JSON response """
+        try:
+            light_bulb       = LightBulb.from_json(json)
+            color_light_bulb = ColorLightBulb(light_bulb.id           ,
+                                              light_bulb.name         ,
+                                              light_bulb.brightness   ,
+                                              light_bulb.color        ,
+                                              light_bulb.status       ,
+                                              light_bulb.creation_date,
+                                              light_bulb.product_info )
+
+        except Exception as e:
+            # neither valid JSON string nor JSON object
+            raise e
+
+        return color_light_bulb
+
+    @staticmethod
+    def _map_color_value(color_value):
+        color_map =\
+        {
             "4a418a": "Blue",
             "6c83ba": "Light Blue",
             "8f2686": "Saturated Purple",
