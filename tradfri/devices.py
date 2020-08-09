@@ -7,6 +7,10 @@ def json_helper(json_obj):
     return json_obj
 
 
+class InvalidTradfriDeviceException(Exception):
+    pass
+
+
 class ProductInfo:
     __JSON_KEY_PRODUCT_INFO              = '3'
     __JSON_KEY_PRODUCT_INFO_DESCRIPTION  = '1'
@@ -31,7 +35,7 @@ class ProductInfo:
 
         except Exception as e:
             # neither valid JSON string nor JSON object
-            raise e
+            raise InvalidTradfriDeviceException()
 
         return product_info
 
@@ -59,7 +63,7 @@ class Device:
 
         except Exception as e:
             # neither valid JSON string nor JSON object
-            raise e
+            raise InvalidTradfriDeviceException()
 
         return device
 
@@ -101,7 +105,7 @@ class LightBulb(Device):
 
         except Exception as e:
             # neither valid JSON string nor JSON object
-            raise e
+            raise InvalidTradfriDeviceException()
 
         return light_bulb
 
@@ -123,26 +127,36 @@ class LightBulb(Device):
 
 
 class ColorLightBulb(LightBulb):
-    def __init__(self, id, name, brightness=0, color=0, status=False, creation_date=0, product_info: ProductInfo=None):
+    __JSON_KEY_BULB     = '3311'
+    __JSON_KEY_BULB_HUE = '5707'
+
+    def __init__(self, id, name, brightness=0, color=0, hue=0, status=False, creation_date=0, product_info: ProductInfo=None):
         super().__init__(id, name, brightness, color, status, creation_date, product_info)
 
+        self.hue               = hue
         self.color_description = ColorLightBulb._map_color_value(self.color)
 
     def from_json(json):
         """ creates a ColorLightBulb instance out of a valid TRADFRI coap-client JSON response """
         try:
-            light_bulb       = LightBulb.from_json(json)
+            light_bulb = LightBulb.from_json(json)
+            json_temp  = json_helper(json)
+
+            color_light_bulb_entry = json_temp[ColorLightBulb.__JSON_KEY_BULB][0]
+            hue                    = color_light_bulb_entry[ColorLightBulb.__JSON_KEY_BULB_HUE]
+
             color_light_bulb = ColorLightBulb(light_bulb.id           ,
                                               light_bulb.name         ,
                                               light_bulb.brightness   ,
                                               light_bulb.color        ,
+                                              hue                     ,
                                               light_bulb.status       ,
                                               light_bulb.creation_date,
                                               light_bulb.product_info )
 
         except Exception as e:
             # neither valid JSON string nor JSON object
-            raise e
+            raise InvalidTradfriDeviceException()
 
         return color_light_bulb
 
@@ -178,5 +192,3 @@ class ColorLightBulb(LightBulb):
                 break
 
         return color_value
-
-LightBulb.from_json('{"3":{"0":"IKEA of Sweden","1":"TRADFRI bulb E27 WW 806lm","2":"","3":"2.3.050","6":1},"3311":[{"5850":1,"5851":254,"9003":0}],"5750":2,"9001":"Schreibtischlampe 2","9002":1572611234,"9003":65537,"9019":1,"9020":1596902605,"9054":0}')

@@ -26,7 +26,7 @@
 import sys
 import os
 import json
-from tradfri.devices import LightBulb
+from tradfri.devices import *
 
 global coap
 coap = '/usr/local/bin/coap-client'
@@ -60,12 +60,17 @@ def tradfri_get_lightbulb(hubip, apiuser, apikey, deviceid):
 
     try:
         lightbulb_json = json.loads(result.read().strip('\n').split('\n')[-1])
-        lightbulb      = LightBulb.from_json(lightbulb_json)
+
+        try:
+            # try if lightbulb is a color lightbulb
+            lightbulb = ColorLightBulb.from_json(lightbulb_json)
+        except InvalidTradfriDeviceException:
+            # try if lightbulb is a usual lightbulb
+            lightbulb = LightBulb.from_json(lightbulb_json)
 
     except KeyError:
         # device is not a lightbulb but a remote control, dimmer or sensor
         lightbulb = None
-        pass
 
     return lightbulb
 
