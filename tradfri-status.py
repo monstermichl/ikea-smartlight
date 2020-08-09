@@ -66,7 +66,7 @@ def main():
     print('===========================================================\n')
     for _ in range(len(lightbulbs)):
         try:
-            bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: <3}, color: {3: >5}, state: {4}'\
+            bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: <3}, color: {3: >16}, state: {4}'\
                 .format(lightbulbs[_].id,
                         lightbulbs[_].name,
                         lightbulbs[_].brightness,
