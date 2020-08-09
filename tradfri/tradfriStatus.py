@@ -32,6 +32,7 @@ global coap
 coap = '/usr/local/bin/coap-client'
 timeout = 5
 
+
 def tradfri_get_devices(hubip, apiuser, apikey):
     """ function for getting all tradfri device ids """
     tradfriHub = 'coaps://{}:5684/15001' .format(hubip)
@@ -45,6 +46,7 @@ def tradfri_get_devices(hubip, apiuser, apikey):
         sys.exit(1)
 
     return json.loads(result.read().strip('\n').split('\n')[-1])
+
 
 def tradfri_get_lightbulb(hubip, apiuser, apikey, deviceid):
     """ function for getting tradfri lightbulb information """
@@ -68,11 +70,12 @@ def tradfri_get_lightbulb(hubip, apiuser, apikey, deviceid):
             # try if lightbulb is a usual lightbulb
             lightbulb = LightBulb.from_json(lightbulb_json)
 
-    except KeyError:
+    except Exception as e:
         # device is not a lightbulb but a remote control, dimmer or sensor
         lightbulb = None
 
     return lightbulb
+
 
 def tradfri_get_groups(hubip, apiuser, apikey):
     """ function for getting tradfri groups """
@@ -87,6 +90,7 @@ def tradfri_get_groups(hubip, apiuser, apikey):
         sys.exit(1)
 
     return json.loads(result.read().strip('\n').split('\n')[-1])
+
 
 def tradfri_get_group(hubip, apiuser, apikey, groupid):
     """ function for getting tradfri group information """
