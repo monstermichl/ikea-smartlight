@@ -1,5 +1,5 @@
 import os
-import ConfigParser
+import configparser
 
 hubip   = ''
 apiuser = ''
@@ -10,7 +10,7 @@ def get_config():
     global apiuser
     global apikey
 
-    conf = ConfigParser.ConfigParser()
+    conf = configparser.ConfigParser()
     script_dir = os.path.dirname(os.path.realpath(__file__))
     conf.read(script_dir + '/../tradfri.cfg')
 
