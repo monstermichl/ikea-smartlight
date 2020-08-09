@@ -41,57 +41,51 @@ def main():
     apiuser = config.apiuser
     apikey  = config.apikey
 
-    lightbulb = []
-    lightgroup = []
+    lightbulbs = []
+    lightgroups = []
 
     print('[ ] Tradfri: acquiring all Tradfri devices, please wait ...')
     devices = tradfriStatus.tradfri_get_devices(hubip, apiuser, apikey)
     groups = tradfriStatus.tradfri_get_groups(hubip, apiuser, apikey)
 
     for deviceid in tqdm(range(len(devices)), desc='Tradfri devices', unit=' devices'):
-        lightbulb.append(tradfriStatus.tradfri_get_lightbulb(hubip, apiuser, apikey,
-                                                             str(devices[deviceid])))
+        lightbulb = tradfriStatus.tradfri_get_lightbulb(hubip, apiuser, apikey,
+                                                             str(devices[deviceid]))
+        if lightbulb is not None:
+            lightbulbs.append(lightbulb)
 
     # sometimes the request are to fast, the will decline the request (flood security)
     # in this case you could increse the sleep timer
     time.sleep(.5)
 
     for groupid in tqdm(range(len(groups)), desc='Tradfri groups', unit=' group'):
-        lightgroup.append(tradfriStatus.tradfri_get_group(hubip, apiuser, apikey,
+        lightgroups.append(tradfriStatus.tradfri_get_group(hubip, apiuser, apikey,
                                                           str(groups[groupid])))
 
     print('[+] Tradfri: device information gathered')
     print('===========================================================\n')
-    for _ in range(len(lightbulb)):
+    for _ in range(len(lightbulbs)):
         try:
-            brightness = lightbulb[_]["3311"][0]["5851"]
-            try:
-                warmth     = float(lightbulb[_]["3311"][0]["5711"])
-                warmth     = round((warmth-250)/(454-250)*100,1)# reported as a percentage (100% maximum warmth)
-            except KeyError:
-                warmth = "NAN"
+            bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: <3}, warmth: {3: >5}%, state: {4}'\
+                .format(lightbulbs[_].id,
+                        lightbulbs[_].name,
+                        lightbulbs[_].brightness,
+                        lightbulbs[_].warmth,
+                        lightbulbs[_].status)
 
-            if lightbulb[_]["3311"][0]["5850"] == 0:
-                print('bulb ID {0:<5}, name: {1: <35}, brightness: {2: <3}, warmth: {3: >5}%, state: off'
-                      .format(lightbulb[_]["9003"], lightbulb[_]["9001"],
-                              brightness,warmth))
-            else:
-                print('bulb ID {0:<5}, name: {1: <35}, brightness: {2: <3}, warmth: {3: >5}%, state: on'
-                      .format(lightbulb[_]["9003"], lightbulb[_]["9001"],
-                              brightness,warmth))
+            print(bulb_string)
+
         except KeyError:
             # device is not a lightbulb but a remote control, dimmer or sensor
             pass
 
     print('\n')
 
-    for _ in range(len(lightgroup)):
-        if lightgroup[_]["5850"] == 0:
-            print('group ID: {0:<5}, name: {1: <16}, state: off'
-                  .format(lightgroup[_]["9003"], lightgroup[_]["9001"]))
+    for _ in range(len(lightgroups)):
+        if lightgroups[_]["5850"] == 0:
+            group_string = 'group ID: {0:<5}, name: {1: <16}, state: off'.format(lightgroups[_]["9003"], lightgroups[_]["9001"])
         else:
-            print('group ID: {0:<5}, name: {1: <16}, state: on'
-                  .format(lightgroup[_]["9003"], lightgroup[_]["9001"]))
+            group_string = 'group ID: {0:<5}, name: {1: <16}, state: on'.format(lightgroups[_]["9003"], lightgroups[_]["9001"])
 
 if __name__ == "__main__":
     main()
