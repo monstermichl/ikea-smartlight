@@ -31,7 +31,6 @@ class ProductInfo:
 
         except Exception as e:
             # neither valid JSON string nor JSON object
-            product_info = None
             raise e
 
         return product_info
@@ -60,7 +59,6 @@ class Device:
 
         except Exception as e:
             # neither valid JSON string nor JSON object
-            device = None
             raise e
 
         return device
@@ -79,9 +77,10 @@ class LightBulb(Device):
     def __init__(self, id, name, brightness=0, color=0, status=False, creation_date=0, product_info: ProductInfo=None):
         super().__init__(id, name, creation_date, product_info)
 
-        self.brightness = brightness
-        self.color      = color
-        self.status     = status
+        self.brightness        = brightness
+        self.color             = color
+        self.color_description = LightBulb._map_color_value(self.color)
+        self.status            = status
 
     def from_json(json):
         """ creates a LightBulb instance out of a valid TRADFRI coap-client JSON response """
@@ -92,18 +91,49 @@ class LightBulb(Device):
             light_bulb_entry = json_temp[LightBulb.__JSON_KEY_BULB][0]
             brightness       = light_bulb_entry[LightBulb.__JSON_KEY_BULB_DIMMER]
             status           = light_bulb_entry[LightBulb.__JSON_KEY_BULB_STATE ]
-
-            if LightBulb.__JSON_KEY_BULB_COLOR in light_bulb_entry:
-                color = light_bulb_entry[LightBulb.__JSON_KEY_BULB_COLOR]
-            else:
-                color = float(light_bulb_entry[LightBulb.__JSON_KEY_BULB_TEMPERATURE])
-                color = round((color - 250) / (454 - 250) * 100, 1)  # reported as a percentage (100% maximum warmth)
+            color            = light_bulb_entry[LightBulb.__JSON_KEY_BULB_COLOR ]
 
             light_bulb = LightBulb(device.id, device.name, brightness, color, status, device.creation_date, device.product_info)
 
         except Exception as e:
             # neither valid JSON string nor JSON object
-            light_bulb = None
             raise e
 
         return light_bulb
+
+    @staticmethod
+    def _map_color_value(color_value):
+        color_map =\
+        {
+            "f5faf6": "White",
+            "f1e0b5": "Warm",
+            "efd275": "Glow",
+            "4a418a": "Blue",
+            "6c83ba": "Light Blue",
+            "8f2686": "Saturated Purple",
+            "a9d62b": "Lime",
+            "c984bb": "Light Purple",
+            "d6e44b": "Yellow",
+            "d9337c": "Saturated Pink",
+            "da5d41": "Dark Peach",
+            "dc4b31": "Saturated Red",
+            "dcf0f8": "Cold sky",
+            "e491af": "Pink",
+            "e57345": "Peach",
+            "e78834": "Warm Amber",
+            "e8bedd": "Light Pink",
+            "eaf6fb": "Cool daylight",
+            "ebb63e": "Candlelight",
+            "efd275": "Warm glow",
+            "f1e0b5": "Warm white",
+            "f2eccf": "Sunrise",
+            "f5faf6": "Cool white"
+        }
+
+        mapped_value = ''
+        for value, description in color_map.items():
+            if value == color_value:
+                mapped_value = description
+                break
+
+        return mapped_value

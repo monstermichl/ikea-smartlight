@@ -70,7 +70,7 @@ def main():
                 .format(lightbulbs[_].id,
                         lightbulbs[_].name,
                         lightbulbs[_].brightness,
-                        lightbulbs[_].color,
+                        lightbulbs[_].color_description,
                         lightbulbs[_].status)
 
             print(bulb_string)
