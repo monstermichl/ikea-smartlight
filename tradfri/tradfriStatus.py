@@ -26,7 +26,7 @@
 import sys
 import os
 import json
-from tradfri.lightbulb import LightBulb
+from tradfri.devices import LightBulb
 
 global coap
 coap = '/usr/local/bin/coap-client'
@@ -59,19 +59,8 @@ def tradfri_get_lightbulb(hubip, apiuser, apikey, deviceid):
         sys.exit(1)
 
     try:
-        lightbulb_temp = json.loads(result.read().strip('\n').split('\n')[-1])
-        id             = lightbulb_temp["9003"]
-        name           = lightbulb_temp["9001"]
-        brightness     = lightbulb_temp["3311"][0]["5851"]
-        state          = 'off' if lightbulb_temp["3311"][0]["5850"] == 0 else 'on'
-
-        try:
-            warmth = float(lightbulb_temp["3311"][0]["5711"])
-            warmth = round((warmth - 250) / (454 - 250) * 100, 1)  # reported as a percentage (100% maximum warmth)
-        except KeyError:
-            warmth = "NAN"
-
-        lightbulb = LightBulb(id, name, brightness, warmth, state)
+        lightbulb_json = json.loads(result.read().strip('\n').split('\n')[-1])
+        lightbulb      = LightBulb.from_json(lightbulb_json)
 
     except KeyError:
         # device is not a lightbulb but a remote control, dimmer or sensor
