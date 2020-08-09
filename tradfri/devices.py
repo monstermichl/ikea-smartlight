@@ -91,7 +91,11 @@ class LightBulb(Device):
             light_bulb_entry = json_temp[LightBulb.__JSON_KEY_BULB][0]
             brightness       = light_bulb_entry[LightBulb.__JSON_KEY_BULB_DIMMER]
             status           = light_bulb_entry[LightBulb.__JSON_KEY_BULB_STATE ]
-            color            = light_bulb_entry[LightBulb.__JSON_KEY_BULB_COLOR ]
+
+            if LightBulb.__JSON_KEY_BULB_COLOR in light_bulb_entry:
+                color = light_bulb_entry[LightBulb.__JSON_KEY_BULB_COLOR ]
+            else:
+                color = 'Standard'
 
             light_bulb = LightBulb(device.id, device.name, brightness, color, status, device.creation_date, device.product_info)
 
@@ -110,13 +114,12 @@ class LightBulb(Device):
             "efd275": "Glow",
         }
 
-        mapped_value = ''
         for value, description in color_map.items():
             if value == color_value:
-                mapped_value = description
+                color_value = description
                 break
 
-        return mapped_value
+        return color_value
 
 
 class ColorLightBulb(LightBulb):
@@ -169,10 +172,11 @@ class ColorLightBulb(LightBulb):
             "f5faf6": "Cool white"
         }
 
-        mapped_value = ''
         for value, description in color_map.items():
             if value == color_value:
-                mapped_value = description
+                color_value = description
                 break
 
-        return mapped_value
+        return color_value
+
+LightBulb.from_json('{"3":{"0":"IKEA of Sweden","1":"TRADFRI bulb E27 WW 806lm","2":"","3":"2.3.050","6":1},"3311":[{"5850":1,"5851":254,"9003":0}],"5750":2,"9001":"Schreibtischlampe 2","9002":1572611234,"9003":65537,"9019":1,"9020":1596902605,"9054":0}')
