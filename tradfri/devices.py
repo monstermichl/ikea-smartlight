@@ -1,4 +1,5 @@
 import json
+import colorsys
 
 
 def json_helper(json_obj):
@@ -93,8 +94,8 @@ class LightBulb(Device):
             device    = Device.from_json(json_temp)
 
             light_bulb_entry = json_temp[LightBulb.__JSON_KEY_BULB][0]
-            brightness       = light_bulb_entry[LightBulb.__JSON_KEY_BULB_DIMMER]
-            status           = light_bulb_entry[LightBulb.__JSON_KEY_BULB_STATE ]
+            brightness       = (light_bulb_entry[LightBulb.__JSON_KEY_BULB_DIMMER] / 255) * 100
+            status           = (light_bulb_entry[LightBulb.__JSON_KEY_BULB_STATE ])
 
             if LightBulb.__JSON_KEY_BULB_COLOR in light_bulb_entry:
                 color = light_bulb_entry[LightBulb.__JSON_KEY_BULB_COLOR ]
@@ -127,13 +128,23 @@ class LightBulb(Device):
 
 
 class ColorLightBulb(LightBulb):
-    __JSON_KEY_BULB     = '3311'
-    __JSON_KEY_BULB_HUE = '5707'
+    __JSON_KEY_BULB            = '3311'
+    __JSON_KEY_BULB_HUE        = '5707'
+    __JSON_KEY_BULB_SATURATION = '5708'
 
-    def __init__(self, id, name, brightness=0, color=0, hue=0, status=False, creation_date=0, product_info: ProductInfo=None):
-        super().__init__(id, name, brightness, color, status, creation_date, product_info)
+    def __init__(self, id, name, hue=0, saturation=0, brightness=0, status=False, creation_date=0, product_info: ProductInfo=None):
+        super().__init__(id, name, brightness, 0, status, creation_date, product_info)
 
-        self.hue               = hue
+        self.hue        = hue
+        self.saturation = saturation
+
+        r, g, b = colorsys.hsv_to_rgb(self.hue / 360, self.saturation / 100, self.brightness / 100)
+
+        r *= 255
+        g *= 255
+        b *= 255
+
+        self.color             = f'{int(r):02x}{int(g):02x}{int(b):02x}'
         self.color_description = ColorLightBulb._map_color_value(self.color)
 
     def from_json(json):
@@ -143,13 +154,14 @@ class ColorLightBulb(LightBulb):
             json_temp  = json_helper(json)
 
             color_light_bulb_entry = json_temp[ColorLightBulb.__JSON_KEY_BULB][0]
-            hue                    = color_light_bulb_entry[ColorLightBulb.__JSON_KEY_BULB_HUE]
+            hue                    = (color_light_bulb_entry[ColorLightBulb.__JSON_KEY_BULB_HUE       ] / 65536) * 360
+            saturation             = (color_light_bulb_entry[ColorLightBulb.__JSON_KEY_BULB_SATURATION] / 65536) * 100
 
             color_light_bulb = ColorLightBulb(light_bulb.id           ,
                                               light_bulb.name         ,
-                                              light_bulb.brightness   ,
-                                              light_bulb.color        ,
                                               hue                     ,
+                                              saturation              ,
+                                              light_bulb.brightness   ,
                                               light_bulb.status       ,
                                               light_bulb.creation_date,
                                               light_bulb.product_info )
