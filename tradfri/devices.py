@@ -94,8 +94,8 @@ class LightBulb(Device):
             device    = Device.from_json(json_temp)
 
             light_bulb_entry = json_temp[LightBulb.__JSON_KEY_BULB][0]
-            brightness       = (light_bulb_entry[LightBulb.__JSON_KEY_BULB_DIMMER] / 255) * 100
-            status           = (light_bulb_entry[LightBulb.__JSON_KEY_BULB_STATE ])
+            brightness       = round((light_bulb_entry[LightBulb.__JSON_KEY_BULB_DIMMER] / 255) * 100, 2)
+            status           = light_bulb_entry[LightBulb.__JSON_KEY_BULB_STATE]
 
             if LightBulb.__JSON_KEY_BULB_COLOR in light_bulb_entry:
                 color = light_bulb_entry[LightBulb.__JSON_KEY_BULB_COLOR ]
@@ -135,8 +135,8 @@ class ColorLightBulb(LightBulb):
     def __init__(self, id, name, hue=0, saturation=0, brightness=0, status=False, creation_date=0, product_info: ProductInfo=None):
         super().__init__(id, name, brightness, 0, status, creation_date, product_info)
 
-        self.hue        = hue
-        self.saturation = saturation
+        self.hue        = round(hue, 2)
+        self.saturation = round(saturation, 2)
 
         r, g, b = colorsys.hsv_to_rgb(self.hue / 360, self.saturation / 100, self.brightness / 100)
 
