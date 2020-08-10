@@ -30,13 +30,15 @@ from __future__ import unicode_literals
 import sys
 import time
 
-from config import config
+from config.config import Config
 from tradfri import tradfriStatus
 from tqdm import tqdm
+
 
 def main():
     """ main function """
 
+    config  = Config.get_default_config()
     hubip   = config.hubip
     apiuser = config.apiuser
     apikey  = config.apikey
@@ -88,6 +90,7 @@ def main():
             group_string = 'group ID: {0:<5}, name: {1: <16}, state: on'.format(lightgroups[_]["9003"], lightgroups[_]["9001"])
 
         print(group_string)
+
 
 if __name__ == "__main__":
     main()

@@ -25,7 +25,6 @@
 
 import sys
 import os
-import json
 from tradfri.devices import *
 
 global coap

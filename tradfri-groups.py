@@ -30,7 +30,7 @@ from __future__ import unicode_literals
 import sys
 import argparse
 
-from config import config
+from config.config import Config
 from tradfri import tradfriActions
 
 def parse_args():
@@ -50,6 +50,7 @@ def main():
     """ main function """
     args = parse_args()
 
+    config  = Config.get_default_config()
     hubip   = config.hubip
     apiuser = config.apiuser
     apikey  = config.apikey

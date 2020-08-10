@@ -2,7 +2,7 @@ import json
 import colorsys
 
 
-def json_helper(json_obj):
+def _json_helper(json_obj):
     if isinstance(json_obj, str):
         json_obj = json.loads(json_obj)
     return json_obj
@@ -27,7 +27,7 @@ class ProductInfo:
     def from_json(json):
         """ creates a ProductInfo instance out of a valid TRADFRI coap-client JSON response """
         try:
-            json_temp = json_helper(json)
+            json_temp = _json_helper(json)
 
             product_info_entry = json_temp[ProductInfo.__JSON_KEY_PRODUCT_INFO]
             product_info       = ProductInfo(product_info_entry[ProductInfo.__JSON_KEY_PRODUCT_INFO_DESCRIPTION ],
@@ -52,10 +52,11 @@ class Device:
         self.creation_date = creation_date
         self.product_info  = product_info
 
+    @staticmethod
     def from_json(json):
         """ creates a Device instance out of a valid TRADFRI coap-client JSON response """
         try:
-            json_temp    = json_helper(json)
+            json_temp    = _json_helper(json)
             product_info = ProductInfo.from_json(json)
 
             device = Device(json_temp[Device.__JSON_KEY_INSTANCE_ID  ],
@@ -87,10 +88,11 @@ class LightBulb(Device):
         self.color_description = LightBulb._map_color_value(self.color)
         self.status            = status
 
+    @staticmethod
     def from_json(json):
         """ creates a LightBulb instance out of a valid TRADFRI coap-client JSON response """
         try:
-            json_temp = json_helper(json)
+            json_temp = _json_helper(json)
             device    = Device.from_json(json_temp)
 
             light_bulb_entry = json_temp[LightBulb.__JSON_KEY_BULB][0]
@@ -147,11 +149,12 @@ class ColorLightBulb(LightBulb):
         self.color             = f'{int(r):02x}{int(g):02x}{int(b):02x}'
         self.color_description = ColorLightBulb._map_color_value(self.color)
 
+    @staticmethod
     def from_json(json):
         """ creates a ColorLightBulb instance out of a valid TRADFRI coap-client JSON response """
         try:
             light_bulb = LightBulb.from_json(json)
-            json_temp  = json_helper(json)
+            json_temp  = _json_helper(json)
 
             color_light_bulb_entry = json_temp[ColorLightBulb.__JSON_KEY_BULB][0]
             hue                    = (color_light_bulb_entry[ColorLightBulb.__JSON_KEY_BULB_HUE       ] / 65536) * 360
