@@ -87,6 +87,8 @@ def main():
         else:
             group_string = 'group ID: {0:<5}, name: {1: <16}, state: on'.format(lightgroups[_]["9003"], lightgroups[_]["9001"])
 
+        print(group_string)
+
 if __name__ == "__main__":
     main()
     sys.exit(0)
