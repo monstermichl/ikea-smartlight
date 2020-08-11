@@ -61,12 +61,10 @@ def tradfri_get_lightbulb(hubip, apiuser, apikey, deviceid):
 
     try:
         lightbulb_json = json.loads(result.read().strip('\n').split('\n')[-1])
+        lightbulb      = ColorLightBulb.from_json(lightbulb_json)
 
-        try:
-            # try if lightbulb is a color lightbulb
-            lightbulb = ColorLightBulb.from_json(lightbulb_json)
-        except InvalidTradfriDeviceException:
-            # try if lightbulb is a usual lightbulb
+        # if device is no color light bulb, try, if it is a usual light bulb
+        if lightbulb is None:
             lightbulb = LightBulb.from_json(lightbulb_json)
 
     except Exception as e:
