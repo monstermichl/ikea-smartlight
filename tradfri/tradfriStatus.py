@@ -27,12 +27,6 @@ from tradfri.devices import *
 from tradfri.endpoint import Endpoint
 
 
-def tradfri_get_devices(hubip, apiuser, apikey):
-    """ function for getting all tradfri device ids """
-    config = Config(hubip, apiuser, apikey)
-    return Coap.get(config, Endpoint.DEVICE)
-
-
 def tradfri_get_lightbulb(hubip, apiuser, apikey, deviceid):
     """ function for getting tradfri lightbulb information """
     config         = Config(hubip, apiuser, apikey)

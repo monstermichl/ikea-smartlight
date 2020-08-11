@@ -32,6 +32,7 @@ import time
 
 from config.config import Config
 from tradfri import tradfriStatus
+from tradfri.devices import *
 from tqdm import tqdm
 
 
@@ -43,18 +44,11 @@ def main():
     apiuser = config.apiuser
     apikey  = config.apikey
 
-    lightbulbs = []
     lightgroups = []
 
     print('[ ] Tradfri: acquiring all Tradfri devices, please wait ...')
-    devices = tradfriStatus.tradfri_get_devices(hubip, apiuser, apikey)
-    groups = tradfriStatus.tradfri_get_groups(hubip, apiuser, apikey)
-
-    for deviceid in tqdm(range(len(devices)), desc='Tradfri devices', unit=' devices'):
-        lightbulb = tradfriStatus.tradfri_get_lightbulb(hubip, apiuser, apikey,
-                                                             str(devices[deviceid]))
-        if lightbulb is not None:
-            lightbulbs.append(lightbulb)
+    devices = get_devices(config)
+    groups  = tradfriStatus.tradfri_get_groups(hubip, apiuser, apikey)
 
     # sometimes the request are to fast, the will decline the request (flood security)
     # in this case you could increse the sleep timer
@@ -66,20 +60,25 @@ def main():
 
     print('[+] Tradfri: device information gathered')
     print('===========================================================\n')
-    for _ in range(len(lightbulbs)):
-        try:
-            bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: >6}, color: {3: >16}, state: {4}'\
-                .format(lightbulbs[_].id,
-                        lightbulbs[_].name,
-                        lightbulbs[_].brightness,
-                        lightbulbs[_].color_description,
-                        lightbulbs[_].status)
+    for _ in range(len(devices)):
+        device = devices[_]
 
-            print(bulb_string)
+        if isinstance(device, LightBulb     ) or \
+           isinstance(device, ColorLightBulb):
 
-        except KeyError:
-            # device is not a lightbulb but a remote control, dimmer or sensor
-            pass
+            try:
+                bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: >6}, color: {3: >16}, state: {4}'\
+                    .format(device.id,
+                            device.name,
+                            device.brightness,
+                            device.color_description,
+                            device.status)
+
+                print(bulb_string)
+
+            except KeyError:
+                # device is not a lightbulb but a remote control, dimmer or sensor
+                pass
 
     print('\n')
 

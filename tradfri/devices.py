@@ -1,12 +1,38 @@
 import json
 import colorsys
+
+from coap.coap import Coap
 from config.config import Config
+from tradfri.endpoint import Endpoint
 
 
 def _json_helper(json_obj):
     if isinstance(json_obj, str):
         json_obj = json.loads(json_obj)
     return json_obj
+
+
+def get_devices(config: Config):
+    devices_ids = Coap.get(config, Endpoint.DEVICE)
+    devices     = []
+
+    for device_id in devices_ids:
+        # try if device is a color light bulb
+        device = ColorLightBulb.get_device(config, device_id)
+
+        # if device is no color light bulb, try if it is a usual light bulb
+        if device is None:
+            device = LightBulb.get_device(config, device_id)
+
+        # if device is no usual light bulb, just parse it as device
+        if device is None:
+            device = Device.get_device(config, device_id)
+
+        # if device has been parsed successfully, add it to the devices list
+        if device is not None:
+            devices.append(device)
+
+    return devices
 
 
 class ProductInfo:
@@ -71,6 +97,11 @@ class Device:
 
         return device
 
+    @staticmethod
+    def get_device(config: Config, id):
+        json = Coap.get(config, Endpoint.DEVICE, id)
+        return Device.from_json(json)
+
 
 class LightBulb(Device):
     __JSON_KEY_BULB                 = '3311'
@@ -117,6 +148,11 @@ class LightBulb(Device):
             pass
 
         return light_bulb
+
+    @staticmethod
+    def get_device(config: Config, id):
+        json = Coap.get(config, Endpoint.DEVICE, id)
+        return LightBulb.from_json(json)
 
     @staticmethod
     def _map_color_value(color_value):
@@ -185,6 +221,11 @@ class ColorLightBulb(LightBulb):
             pass
 
         return color_light_bulb
+
+    @staticmethod
+    def get_device(config: Config, id):
+        json = Coap.get(config, Endpoint.DEVICE, id)
+        return ColorLightBulb.from_json(json)
 
     @staticmethod
     def _map_color_value(color_value):

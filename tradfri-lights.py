@@ -33,6 +33,7 @@ import argparse
 from config.config import Config
 from tradfri import tradfriActions
 
+
 def parse_args():
     """ function for getting parsed arguments """
     parser = argparse.ArgumentParser()
@@ -46,6 +47,7 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
 
 def main():
     """ main function """
@@ -74,6 +76,7 @@ def main():
         else:
             sys.stderr.write('[-] Tradfri: color value can only be warm/normal/cold\n')
             sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
