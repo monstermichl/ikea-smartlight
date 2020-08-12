@@ -32,6 +32,7 @@ import time
 
 from tradfri import tradfriStatus
 from tradfri.tradfri_device import *
+from tradfri.tradfri_group import *
 from tqdm import tqdm
 
 
@@ -47,26 +48,21 @@ def main():
 
     print('[ ] Tradfri: acquiring all Tradfri devices, please wait ...')
     devices = get_tradfri_devices(config)
-    groups  = tradfriStatus.tradfri_get_groups(hubip, apiuser, apikey)
+    groups  = get_tradfri_groups(config)
 
     # sometimes the request are to fast, the will decline the request (flood security)
     # in this case you could increse the sleep timer
     time.sleep(.5)
 
-    for groupid in tqdm(range(len(groups)), desc='Tradfri groups', unit=' group'):
-        lightgroups.append(tradfriStatus.tradfri_get_group(hubip, apiuser, apikey,
-                                                          str(groups[groupid])))
-
     print('[+] Tradfri: device information gathered')
     print('===========================================================\n')
-    for _ in range(len(devices)):
-        device = devices[_]
-
-        if isinstance(device, LightBulb     ) or \
-           isinstance(device, ColorLightBulb):
+    
+    for device in devices:
+        if isinstance(device, TradfriLightBulb) or \
+           isinstance(device, TradfriColorLightBulb):
 
             try:
-                bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: >6}, color: {3: >16}, state: {4}'\
+                bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: >6}%, color: {3: >16}, state: {4}'\
                     .format(device.id,
                             device.name,
                             device.brightness,
@@ -81,13 +77,8 @@ def main():
 
     print('\n')
 
-    for _ in range(len(lightgroups)):
-        if lightgroups[_]["5850"] == 0:
-            group_string = 'group ID: {0:<5}, name: {1: <16}, state: off'.format(lightgroups[_]["9003"], lightgroups[_]["9001"])
-        else:
-            group_string = 'group ID: {0:<5}, name: {1: <16}, state: on'.format(lightgroups[_]["9003"], lightgroups[_]["9001"])
-
-        print(group_string)
+    for group in groups:
+        print('group ID: {0:<5}, name: {1: <16}, state: {2}'.format(group.id, group.name, group.state))
 
 
 if __name__ == "__main__":

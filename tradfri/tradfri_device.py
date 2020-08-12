@@ -1,15 +1,9 @@
-import json
 import colorsys
 
 from coap.coap import Coap
 from config.config import Config
 from tradfri.tradfri_endpoint import TradfriEndpoint
-
-
-def _json_helper(json_obj):
-    if isinstance(json_obj, str):
-        json_obj = json.loads(json_obj)
-    return json_obj
+from common.helper import json_helper
 
 
 def get_tradfri_devices(config: Config):
@@ -18,15 +12,15 @@ def get_tradfri_devices(config: Config):
 
     for device_id in devices_ids:
         # try if device is a color light bulb
-        device = ColorLightBulb.get_device(config, device_id)
+        device = TradfriColorLightBulb.get_device(config, device_id)
 
         # if device is no color light bulb, try if it is a usual light bulb
         if device is None:
-            device = LightBulb.get_device(config, device_id)
+            device = TradfriLightBulb.get_device(config, device_id)
 
         # if device is no usual light bulb, just parse it as device
         if device is None:
-            device = Device.get_device(config, device_id)
+            device = TradfriDevice.get_device(config, device_id)
 
         # if device has been parsed successfully, add it to the devices list
         if device is not None:
@@ -35,7 +29,7 @@ def get_tradfri_devices(config: Config):
     return devices
 
 
-class ProductInfo:
+class TradfriProductInfo:
     __JSON_KEY_PRODUCT_INFO              = '3'
     __JSON_KEY_PRODUCT_INFO_DESCRIPTION  = '1'
     __JSON_KEY_PRODUCT_INFO_MANUFACTURER = '0'
@@ -48,16 +42,16 @@ class ProductInfo:
 
     @staticmethod
     def from_json(json):
-        """ creates a ProductInfo instance out of a valid TRADFRI coap-client JSON response """
+        """ creates a TradfriProductInfo instance out of a valid TRADFRI coap-client JSON response """
         product_info = None
 
         try:
-            json_temp = _json_helper(json)
+            json_temp = json_helper(json)
 
-            product_info_entry = json_temp[ProductInfo.__JSON_KEY_PRODUCT_INFO]
-            product_info       = ProductInfo(product_info_entry[ProductInfo.__JSON_KEY_PRODUCT_INFO_DESCRIPTION ],
-                                             product_info_entry[ProductInfo.__JSON_KEY_PRODUCT_INFO_MANUFACTURER],
-                                             product_info_entry[ProductInfo.__JSON_KEY_PRODUCT_INFO_VERSION     ])
+            product_info_entry = json_temp[TradfriProductInfo.__JSON_KEY_PRODUCT_INFO]
+            product_info       = TradfriProductInfo(product_info_entry[TradfriProductInfo.__JSON_KEY_PRODUCT_INFO_DESCRIPTION ],
+                                                    product_info_entry[TradfriProductInfo.__JSON_KEY_PRODUCT_INFO_MANUFACTURER],
+                                                    product_info_entry[TradfriProductInfo.__JSON_KEY_PRODUCT_INFO_VERSION     ])
 
         except Exception as e:
             # neither valid JSON string nor JSON object
@@ -66,12 +60,12 @@ class ProductInfo:
         return product_info
 
 
-class Device:
+class TradfriDevice:
     __JSON_KEY_INSTANCE_ID   = '9003'
     __JSON_KEY_CREATION_DATE = '9002'
     __JSON_KEY_NAME          = '9001'
 
-    def __init__(self, id, name, creation_date, product_info: ProductInfo=None, api_config: Config=None):
+    def __init__(self, id, name, creation_date, product_info: TradfriProductInfo=None, api_config: Config=None):
         self.id            = id
         self.name          = name
         self.creation_date = creation_date
@@ -80,16 +74,16 @@ class Device:
 
     @staticmethod
     def from_json(json, api_config: Config=None):
-        """ creates a Device instance out of a valid TRADFRI coap-client JSON response """
+        """ creates a TradfriDevice instance out of a valid TRADFRI coap-client JSON response """
         device = None
 
         try:
-            json_temp    = _json_helper(json)
-            product_info = ProductInfo.from_json(json)
+            json_temp    = json_helper(json)
+            product_info = TradfriProductInfo.from_json(json)
 
-            device = Device(json_temp[Device.__JSON_KEY_INSTANCE_ID  ],
-                            json_temp[Device.__JSON_KEY_NAME         ],
-                            json_temp[Device.__JSON_KEY_CREATION_DATE], product_info, api_config)
+            device = TradfriDevice(json_temp[TradfriDevice.__JSON_KEY_INSTANCE_ID  ],
+                                   json_temp[TradfriDevice.__JSON_KEY_NAME         ],
+                                   json_temp[TradfriDevice.__JSON_KEY_CREATION_DATE], product_info, api_config)
 
         except Exception as e:
             # neither valid JSON string nor JSON object
@@ -100,10 +94,10 @@ class Device:
     @staticmethod
     def get_device(config: Config, id):
         json = Coap.get(config, TradfriEndpoint.DEVICE, id)
-        return Device.from_json(json)
+        return TradfriDevice.from_json(json)
 
 
-class LightBulb(Device):
+class TradfriLightBulb(TradfriDevice):
     __JSON_KEY_BULB                 = '3311'
     __JSON_KEY_BULB_STATE           = '5850'
     __JSON_KEY_BULB_BRIGHTNESS      = '5851'
@@ -115,34 +109,34 @@ class LightBulb(Device):
 
     __MAX_BRIGHTNESS = 255
 
-    def __init__(self, id, name, brightness=0, color=0, status=False, creation_date=0, product_info: ProductInfo=None, api_config: Config=None):
+    def __init__(self, id, name, brightness=0, color=0, status=False, creation_date=0, product_info: TradfriProductInfo=None, api_config: Config=None):
         super().__init__(id, name, creation_date, product_info, api_config)
 
         self.brightness        = brightness
         self.color             = color
-        self.color_description = LightBulb._map_color_value(self.color)
+        self.color_description = TradfriLightBulb._map_color_value(self.color)
         self.status            = status
 
     @staticmethod
     def from_json(json, api_config: Config=None):
-        """ creates a LightBulb instance out of a valid TRADFRI coap-client JSON response """
+        """ creates a TradfriLightBulb instance out of a valid TRADFRI coap-client JSON response """
         light_bulb = None
 
         try:
-            json_temp = _json_helper(json)
-            device    = Device.from_json(json_temp)
+            json_temp = json_helper(json)
+            device    = TradfriDevice.from_json(json_temp)
 
-            light_bulb_entry = json_temp[LightBulb.__JSON_KEY_BULB][0]
-            brightness       = round((light_bulb_entry[LightBulb.__JSON_KEY_BULB_BRIGHTNESS] / LightBulb.__MAX_BRIGHTNESS) * 100, 2)
-            status           = light_bulb_entry[LightBulb.__JSON_KEY_BULB_STATE]
+            light_bulb_entry = json_temp[TradfriLightBulb.__JSON_KEY_BULB][0]
+            brightness       = round((light_bulb_entry[TradfriLightBulb.__JSON_KEY_BULB_BRIGHTNESS] / TradfriLightBulb.__MAX_BRIGHTNESS) * 100, 2)
+            status           = light_bulb_entry[TradfriLightBulb.__JSON_KEY_BULB_STATE]
 
-            if LightBulb.__JSON_KEY_BULB_COLOR in light_bulb_entry:
-                color = light_bulb_entry[LightBulb.__JSON_KEY_BULB_COLOR ]
+            if TradfriLightBulb.__JSON_KEY_BULB_COLOR in light_bulb_entry:
+                color = light_bulb_entry[TradfriLightBulb.__JSON_KEY_BULB_COLOR]
             else:
                 color = 'Standard'
 
-            light_bulb = LightBulb(device.id, device.name, brightness, color, status, device.creation_date,
-                                   device.product_info, api_config)
+            light_bulb = TradfriLightBulb(device.id, device.name, brightness, color, status, device.creation_date,
+                                          device.product_info, api_config)
 
         except Exception as e:
             # neither valid JSON string nor JSON object
@@ -153,7 +147,7 @@ class LightBulb(Device):
     @staticmethod
     def get_device(config: Config, id):
         json = Coap.get(config, TradfriEndpoint.DEVICE, id)
-        return LightBulb.from_json(json)
+        return TradfriLightBulb.from_json(json)
 
     @staticmethod
     def _map_color_value(color_value):
@@ -172,7 +166,7 @@ class LightBulb(Device):
         return color_value
 
 
-class ColorLightBulb(LightBulb):
+class TradfriColorLightBulb(TradfriLightBulb):
     __JSON_KEY_BULB            = '3311'
     __JSON_KEY_BULB_HUE        = '5707'
     __JSON_KEY_BULB_SATURATION = '5708'
@@ -180,7 +174,7 @@ class ColorLightBulb(LightBulb):
     __MAX_HUE        = 65536
     __MAX_SATURATION = 65536
 
-    def __init__(self, id, name, hue=0, saturation=0, brightness=0, status=False, creation_date=0, product_info: ProductInfo=None, api_config: Config=None):
+    def __init__(self, id, name, hue=0, saturation=0, brightness=0, status=False, creation_date=0, product_info: TradfriProductInfo=None, api_config: Config=None):
         super().__init__(id, name, brightness, 0, status, creation_date, product_info, api_config)
 
         self.hue        = round(hue, 2)
@@ -193,30 +187,30 @@ class ColorLightBulb(LightBulb):
         b *= 255
 
         self.color             = f'{int(r):02x}{int(g):02x}{int(b):02x}'
-        self.color_description = ColorLightBulb._map_color_value(self.color)
+        self.color_description = TradfriColorLightBulb._map_color_value(self.color)
 
     @staticmethod
     def from_json(json, api_config: Config=None):
-        """ creates a ColorLightBulb instance out of a valid TRADFRI coap-client JSON response """
+        """ creates a TradfriColorLightBulb instance out of a valid TRADFRI coap-client JSON response """
         color_light_bulb = None
 
         try:
-            light_bulb = LightBulb.from_json(json)
-            json_temp  = _json_helper(json)
+            light_bulb = TradfriLightBulb.from_json(json)
+            json_temp  = json_helper(json)
 
-            color_light_bulb_entry = json_temp[ColorLightBulb.__JSON_KEY_BULB][0]
-            hue                    = (color_light_bulb_entry[ColorLightBulb.__JSON_KEY_BULB_HUE       ] / ColorLightBulb.__MAX_HUE       ) * 360
-            saturation             = (color_light_bulb_entry[ColorLightBulb.__JSON_KEY_BULB_SATURATION] / ColorLightBulb.__MAX_SATURATION) * 100
+            color_light_bulb_entry = json_temp[TradfriColorLightBulb.__JSON_KEY_BULB][0]
+            hue                    = (color_light_bulb_entry[TradfriColorLightBulb.__JSON_KEY_BULB_HUE] / TradfriColorLightBulb.__MAX_HUE) * 360
+            saturation             = (color_light_bulb_entry[TradfriColorLightBulb.__JSON_KEY_BULB_SATURATION] / TradfriColorLightBulb.__MAX_SATURATION) * 100
 
-            color_light_bulb = ColorLightBulb(light_bulb.id           ,
-                                              light_bulb.name         ,
-                                              hue                     ,
-                                              saturation              ,
-                                              light_bulb.brightness   ,
-                                              light_bulb.status       ,
-                                              light_bulb.creation_date,
-                                              light_bulb.product_info ,
-                                              api_config              )
+            color_light_bulb = TradfriColorLightBulb(light_bulb.id           ,
+                                                     light_bulb.name         ,
+                                                     hue                     ,
+                                                     saturation              ,
+                                                     light_bulb.brightness   ,
+                                                     light_bulb.status       ,
+                                                     light_bulb.creation_date,
+                                                     light_bulb.product_info ,
+                                                     api_config              )
 
         except Exception as e:
             # neither valid JSON string nor JSON object
@@ -227,7 +221,7 @@ class ColorLightBulb(LightBulb):
     @staticmethod
     def get_device(config: Config, id):
         json = Coap.get(config, TradfriEndpoint.DEVICE, id)
-        return ColorLightBulb.from_json(json)
+        return TradfriColorLightBulb.from_json(json)
 
     @staticmethod
     def _map_color_value(color_value):
@@ -261,3 +255,38 @@ class ColorLightBulb(LightBulb):
                 break
 
         return color_value
+
+
+class TradfriRemote(TradfriDevice):
+    _JSON_KEY_SUB_LINKS = '15009'
+
+    def __init__(self, id, name, creation_date=0, product_info: TradfriProductInfo=None, api_config: Config=None):
+        super().__init__(id, name, creation_date, product_info, api_config)
+
+        self.brightness        = brightness
+        self.color             = color
+        self.color_description = TradfriLightBulb._map_color_value(self.color)
+        self.status            = status
+
+    @staticmethod
+    def from_json(json, api_config: Config=None):
+        """ creates a TradfriRemote instance out of a valid TRADFRI coap-client JSON response """
+        remote = None
+
+        try:
+            json_temp = json_helper(json)
+
+            if TradfriRemote._JSON_KEY_SUB_LINKS in json_temp:
+                device = TradfriDevice.from_json(json_temp)
+                remote = TradfriRemote(device.id, device.name, device.creation_date, device.product_info, api_config)
+
+        except Exception as e:
+            # neither valid JSON string nor JSON object
+            pass
+
+        return remote
+
+    @staticmethod
+    def get_device(config: Config, id):
+        json = Coap.get(config, TradfriEndpoint.DEVICE, id)
+        return TradfriRemote.from_json(json)
