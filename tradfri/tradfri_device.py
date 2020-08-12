@@ -18,7 +18,11 @@ def get_tradfri_devices(config: Config):
         if device is None:
             device = TradfriLightBulb.get_device(config, device_id)
 
-        # if device is no usual light bulb, just parse it as device
+        # if device is no usual light bulb, try if it is a remote control
+        if device is None:
+            device = TradfriRemote.get_device(config, device_id)
+
+        # if device is no remote control, just parse it as device
         if device is None:
             device = TradfriDevice.get_device(config, device_id)
 
@@ -262,11 +266,6 @@ class TradfriRemote(TradfriDevice):
 
     def __init__(self, id, name, creation_date=0, product_info: TradfriProductInfo=None, api_config: Config=None):
         super().__init__(id, name, creation_date, product_info, api_config)
-
-        self.brightness        = brightness
-        self.color             = color
-        self.color_description = TradfriLightBulb._map_color_value(self.color)
-        self.status            = status
 
     @staticmethod
     def from_json(json, api_config: Config=None):

@@ -50,22 +50,25 @@ def main():
     print('===========================================================\n')
 
     for device in devices:
+        device_string = None
+
         if isinstance(device, TradfriLightBulb) or \
            isinstance(device, TradfriColorLightBulb):
 
-            try:
-                bulb_string = 'bulb ID {0:<5}, name: {1: <35}, brightness: {2: >6}%, color: {3: >16}, state: {4}'\
-                    .format(device.id,
-                            device.name,
-                            device.brightness,
-                            device.color_description,
-                            device.status)
+            device_string = 'bulb ID {0:>7}, name: {1: <35}, brightness: {2: >6}%, color: {3: >16}, state: {4}'\
+                .format(device.id,
+                        device.name,
+                        device.brightness,
+                        device.color_description,
+                        device.status)
 
-                print(bulb_string)
+        elif isinstance(device, TradfriRemote):
+            device_string = 'remote ID {0:<5}, name: {1: <35}' \
+                .format(device.id,
+                        device.name)
 
-            except KeyError:
-                # device is not a lightbulb but a remote control, dimmer or sensor
-                pass
+        if device_string is not None:
+            print(device_string)
 
     print('\n')
 
