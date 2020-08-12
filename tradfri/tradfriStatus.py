@@ -23,36 +23,17 @@
 # C0103 -> invalid-name
 # pylint: disable=C0103
 
-from tradfri.devices import *
-from tradfri.endpoint import Endpoint
-
-
-def tradfri_get_lightbulb(hubip, apiuser, apikey, deviceid):
-    """ function for getting tradfri lightbulb information """
-    config         = Config(hubip, apiuser, apikey)
-    lightbulb_json = Coap.get(config, Endpoint.DEVICE, deviceid)
-
-    try:
-        lightbulb = ColorLightBulb.from_json(lightbulb_json)
-
-        # if device is no color light bulb, try, if it is a usual light bulb
-        if lightbulb is None:
-            lightbulb = LightBulb.from_json(lightbulb_json)
-
-    except Exception as e:
-        # device is not a lightbulb but a remote control, dimmer or sensor
-        lightbulb = None
-
-    return lightbulb
+from tradfri.tradfri_device import *
+from tradfri.tradfri_endpoint import TradfriEndpoint
 
 
 def tradfri_get_groups(hubip, apiuser, apikey):
     """ function for getting tradfri groups """
     config = Config(hubip, apiuser, apikey)
-    return Coap.get(config, Endpoint.GROUP)
+    return Coap.get(config, TradfriEndpoint.GROUP)
 
 
 def tradfri_get_group(hubip, apiuser, apikey, groupid):
     """ function for getting tradfri group information """
     config = Config(hubip, apiuser, apikey)
-    return Coap.get(config, Endpoint.GROUP, groupid)
+    return Coap.get(config, TradfriEndpoint.GROUP, groupid)

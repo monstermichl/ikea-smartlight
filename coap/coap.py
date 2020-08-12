@@ -3,7 +3,7 @@ import sys
 import json
 
 from config.config import Config
-from tradfri.endpoint import Endpoint
+from tradfri.tradfri_endpoint import TradfriEndpoint
 
 
 class Coap:
@@ -23,12 +23,12 @@ class Coap:
         return json.loads(result.read().strip('\n').split('\n')[-1])
 
     @staticmethod
-    def _build_tradri_hub(hubip, endpoint: Endpoint, id=None):
+    def _build_tradri_hub(hubip, endpoint: TradfriEndpoint, id=None):
         url = f'coaps://{hubip}:5684/'
 
-        if endpoint == Endpoint.DEVICE:
+        if endpoint == TradfriEndpoint.DEVICE:
             url += '15001'
-        elif endpoint == Endpoint.GROUP:
+        elif endpoint == TradfriEndpoint.GROUP:
             url += '15004'
 
         if id is not None:
@@ -37,13 +37,13 @@ class Coap:
         return url
 
     @staticmethod
-    def put(payload, api_config: Config, endpoint: Endpoint, id=None):
+    def put(payload, api_config: Config, endpoint: TradfriEndpoint, id=None):
         call = Coap.__PUT_TEMPLATE.format(Coap.__PATH_COAP_BIN, api_config.apiuser, api_config.apikey, payload,
                                           Coap._build_tradri_hub(api_config.hubip, endpoint, id))
         return Coap._execute(call)
 
     @staticmethod
-    def get(api_config: Config, endpoint: Endpoint, id=None):
+    def get(api_config: Config, endpoint: TradfriEndpoint, id=None):
         call = Coap.__GET_TEMPLATE.format(Coap.__PATH_COAP_BIN, api_config.apiuser, api_config.apikey,
                                           Coap._build_tradri_hub(api_config.hubip, endpoint, id),
                                           Coap.__TIMEOUT)

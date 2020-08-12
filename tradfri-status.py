@@ -30,9 +30,8 @@ from __future__ import unicode_literals
 import sys
 import time
 
-from config.config import Config
 from tradfri import tradfriStatus
-from tradfri.devices import *
+from tradfri.tradfri_device import *
 from tqdm import tqdm
 
 
@@ -47,7 +46,7 @@ def main():
     lightgroups = []
 
     print('[ ] Tradfri: acquiring all Tradfri devices, please wait ...')
-    devices = get_devices(config)
+    devices = get_tradfri_devices(config)
     groups  = tradfriStatus.tradfri_get_groups(hubip, apiuser, apikey)
 
     # sometimes the request are to fast, the will decline the request (flood security)
