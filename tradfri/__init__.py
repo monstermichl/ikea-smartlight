@@ -1,3 +1,3 @@
 #!/usr/bin/env python
 
-__all__ = ['tradfriStatus', 'tradfriActions']
+__all__ = ['tradfriActions']
