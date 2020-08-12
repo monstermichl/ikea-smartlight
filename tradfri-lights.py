@@ -32,6 +32,7 @@ import argparse
 
 from config.config import Config
 from tradfri import tradfriActions
+from tradfri.tradfri_device import TradfriLightBulb
 
 
 def parse_args():
@@ -59,11 +60,7 @@ def main():
     apikey  = config.apikey
 
     if args.action == 'power':
-        if args.value == 'on' or args.value == 'off':
-            tradfriActions.tradfri_power_light(hubip, apiuser, apikey, args.lightbulbid, args.value)
-        else:
-            sys.stderr.write('[-] Tradfri: power state can only be on/off\n')
-            sys.exit(1)
+        TradfriLightBulb.set_power_static(args.lightbulbid, True if args.value == 'on' else False, config)
     elif args.action == 'brightness':
         if 1 <= int(args.value) <= 100:
             tradfriActions.tradfri_dim_light(hubip, apiuser, apikey, args.lightbulbid, args.value)

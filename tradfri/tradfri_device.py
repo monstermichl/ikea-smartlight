@@ -77,6 +77,11 @@ class TradfriDevice:
         self.api_config    = api_config
 
     @staticmethod
+    def set_power_static(id: int, on: bool, api_config: Config):
+        payload = '{ "3311": [{ "5850": ' + str(int(on)) + ' }] }'
+        Coap.put(payload, api_config, TradfriEndpoint.DEVICE, id, False)
+
+    @staticmethod
     def from_json(json, api_config: Config=None):
         """ creates a TradfriDevice instance out of a valid TRADFRI coap-client JSON response """
         device = None
