@@ -30,21 +30,13 @@ from __future__ import unicode_literals
 import sys
 import time
 
-from tradfri import tradfriStatus
 from tradfri.tradfri_device import *
 from tradfri.tradfri_group import *
-from tqdm import tqdm
 
 
 def main():
     """ main function """
-
-    config  = Config.get_default_config()
-    hubip   = config.hubip
-    apiuser = config.apiuser
-    apikey  = config.apikey
-
-    lightgroups = []
+    config = Config.get_default_config()
 
     print('[ ] Tradfri: acquiring all Tradfri devices, please wait ...')
     devices = get_tradfri_devices(config)
@@ -56,7 +48,7 @@ def main():
 
     print('[+] Tradfri: device information gathered')
     print('===========================================================\n')
-    
+
     for device in devices:
         if isinstance(device, TradfriLightBulb) or \
            isinstance(device, TradfriColorLightBulb):
